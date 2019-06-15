@@ -11,17 +11,17 @@ func map_values(value int, in_min, in_max, out_min, out_max float64) float64 {
 func main() {
 	const WIDTH = 800
 	const HEIGTH = 800
-	const MAX_ITERATIONS = 200
+	var MAX_ITERATIONS = 200
 	
-	var min float64 = -2.0
-	var max float64 = 2.0
+	var min float64 = -2.84
+	var max float64 = 1.0
+
+	var factor float64 = 1
 	
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 		panic(err)
 	}
 	defer sdl.Quit()
-
-	// var event *sdl.Event
 
 	// Cria window and renderer
 	window, renderer, err := sdl.CreateWindowAndRenderer(1400, 900, 0);
@@ -31,7 +31,20 @@ func main() {
 	defer window.Destroy()
 	renderer.SetLogicalSize(WIDTH, HEIGTH)
 
+	count := 0
 	for {
+		// Esse trecho do algoritmo é responsável por realizar as mudanças nas constantes
+		// min e max que são responsáveis por criar o efeito de zoom.
+		// As constantes são aleatórias e pode-se mudar o efeito alterando o valor delas
+		max -= 0.1*factor
+		min += 0.15*factor
+		factor *= 0.9349
+		MAX_ITERATIONS += 5
+
+		if (count > 30) {
+			MAX_ITERATIONS = int(float64(MAX_ITERATIONS)*1.02)
+		}
+
 		// O PollEvent é necessário para avisar o OS e não deixar a janela irresponsiva
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 			switch event.(type) {
@@ -70,7 +83,7 @@ func main() {
 					n = n + 1
 				}
 
-				brigth := map_values(n, 0, MAX_ITERATIONS, 0, 255)
+				brigth := map_values(n, 0, float64(MAX_ITERATIONS), 0, 255)
 
 				// Se a função não divergiu, então o ponto pertence ao conjunto de Mandelbrot
 				if n == MAX_ITERATIONS || brigth <= 20 {
@@ -88,5 +101,6 @@ func main() {
 		}
 
 		renderer.Present()
+		count++
 	}
 }
