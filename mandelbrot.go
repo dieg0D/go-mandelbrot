@@ -1,5 +1,7 @@
 package main
-
+import (
+	"math"
+)
 import "github.com/veandco/go-sdl2/sdl"
 
 func map_values(value int, in_min, in_max, out_min, out_max float64) float64 {
@@ -71,10 +73,16 @@ func main() {
 				brigth := map_values(n, 0, MAX_ITERATIONS, 0, 255)
 
 				// Se a função não divergiu, então o ponto pertence ao conjunto de Mandelbrot
-				if n == MAX_ITERATIONS {
+				if n == MAX_ITERATIONS || brigth <= 20 {
 					brigth = 0
 				}
-				renderer.SetDrawColor(uint8(brigth), uint8(brigth), uint8(brigth), 255)
+
+				// Cores
+				red := map_values(int(brigth*brigth), 0, 255*255, 0, 255)
+				green := brigth
+				blue := map_values(int(math.Sqrt(brigth)), 0, math.Sqrt(255), 0, 255)
+
+				renderer.SetDrawColor(uint8(red), uint8(green), uint8(blue), 255)
 				renderer.DrawPoint(int32(x), int32(y))
 			}
 		}
