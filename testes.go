@@ -10,18 +10,18 @@
 //     return
 // }
 
-// func main() {
-//     for y := 1.0; y >= -1.0; y -= 0.05 {
-//         for x := -2.0; x <= 0.5; x += 0.0315 {
-//             if cmplx.Abs(mandelbrot(complex(x, y))) < 2 {
-//                 fmt.Print("*")
-//             } else {
-//                 fmt.Print(" ")
-//             }
-//         }
-//         fmt.Println("")
-//     }
-// }
+func main() {
+    for y := 1.0; y >= -1.0; y -= 0.05 {
+        for x := -2.0; x <= 0.5; x += 0.0315 {
+            if cmplx.Abs(mandelbrot(complex(x, y))) < 2 {
+                fmt.Print("*")
+            } else {
+                fmt.Print(" ")
+            }
+        }
+        fmt.Println("")
+    }
+}
 
 // package main
 
