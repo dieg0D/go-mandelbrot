@@ -68,11 +68,14 @@ func main() {
 					n = n + 1
 				}
 
+				brigth := map_values(n, 0, MAX_ITERATIONS, 0, 255)
+
 				// Se a função não divergiu, então o ponto pertence ao conjunto de Mandelbrot
 				if n == MAX_ITERATIONS {
-					renderer.SetDrawColor(0, 0, 0, 0)
-					renderer.DrawPoint(int32(x), int32(y))
+					brigth = 0
 				}
+				renderer.SetDrawColor(uint8(brigth), uint8(brigth), uint8(brigth), 255)
+				renderer.DrawPoint(int32(x), int32(y))
 			}
 		}
 
