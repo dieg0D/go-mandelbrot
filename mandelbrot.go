@@ -56,15 +56,24 @@ func printFractal(WIDTH, HEIGTH, maxIterations int, min, max float64, renderer *
 	}
 }
 
+func 	zoomIn(max, min, factor float64, maxIterations int){
+	max -= 0.1 * factor
+	min += 0.15 * factor
+	factor *= 0.9349
+	maxIterations += 5
+}
+
+func 	zoomOut(){
+	
+}
+
 func main() {
 	const WIDTH = 800
 	const HEIGTH = 800
 	var maxIterations = 200
-
 	var min = -2.84
 	var max = 1.0
 	var quit bool
-
 	var factor float64 = 1
 
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
@@ -80,30 +89,24 @@ func main() {
 	defer window.Destroy()
 	renderer.SetLogicalSize(WIDTH, HEIGTH)
 
-	count := 0
 	for !quit {
 
 		// O PollEvent é necessário para avisar o OS e não deixar a janela irresponsiva
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 			switch event.(type) {
+			case *sdl.MouseWheelEvent:
+				var e = event.(*sdl.MouseWheelEvent)
+				if e.Y > 0{
+					zoomIn()
+				}else if e.Y < 0{
+					zoomOut()
+				}
+
+				break
 			case *sdl.QuitEvent:
 				quit = true
 				break
 			}
-		}
-
-		println("DE FORA", renderer)
-
-		// Esse trecho do algoritmo é responsável por realizar as mudanças nas constantes
-		// min e max que são responsáveis por criar o efeito de zoom.
-		// As constantes são aleatórias e pode-se mudar o efeito alterando o valor delas
-		max -= 0.1 * factor
-		min += 0.15 * factor
-		factor *= 0.9349
-		maxIterations += 5
-
-		if count > 30 {
-			maxIterations = int(float64(maxIterations) * 1.02)
 		}
 
 		// limpa a teal pra não ficar bugado
@@ -114,6 +117,5 @@ func main() {
 
 		// atualiza a tela
 		renderer.Present()
-		count++
 	}
 }
