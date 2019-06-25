@@ -56,15 +56,20 @@ func printFractal(WIDTH, HEIGTH, maxIterations int, min, max float64, renderer *
 	}
 }
 
-func 	zoomIn(max, min, factor float64, maxIterations int){
+func zoomIn(max, min, factor float64, maxIterations int) (float64, float64, float64, int) {
 	max -= 0.1 * factor
 	min += 0.15 * factor
 	factor *= 0.9349
 	maxIterations += 5
+	return max, min, factor, maxIterations
 }
 
-func 	zoomOut(){
-	
+func zoomOut(max, min, factor float64, maxIterations int) (float64, float64, float64, int) {
+	max += 0.1 * factor
+	min -= 0.15 * factor
+	factor /= 0.9349
+	maxIterations -= 5
+	return max, min, factor, maxIterations
 }
 
 func main() {
@@ -90,19 +95,27 @@ func main() {
 	renderer.SetLogicalSize(WIDTH, HEIGTH)
 
 	for !quit {
-
 		// O PollEvent é necessário para avisar o OS e não deixar a janela irresponsiva
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 			switch event.(type) {
 			case *sdl.MouseWheelEvent:
 				var e = event.(*sdl.MouseWheelEvent)
-				if e.Y > 0{
-					zoomIn()
-				}else if e.Y < 0{
-					zoomOut()
+				if e.Y > 0 {
+					max, min, factor, maxIterations = zoomIn(max, min, factor, maxIterations)
+				} else if e.Y < 0 {
+					max, min, factor, maxIterations = zoomOut(max, min, factor, maxIterations)
 				}
-
 				break
+
+			case *sdl.MouseButtonEvent:
+				var e = event.(*sdl.MouseButtonEvent)
+				if e.Button == sdl.BUTTON_LEFT {
+					max, min, factor, maxIterations = zoomIn(max, min, factor, maxIterations)
+				} else if e.Button == sdl.BUTTON_RIGHT {
+					max, min, factor, maxIterations = zoomOut(max, min, factor, maxIterations)
+				}
+				break
+
 			case *sdl.QuitEvent:
 				quit = true
 				break
