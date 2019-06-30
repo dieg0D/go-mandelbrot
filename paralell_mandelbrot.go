@@ -8,14 +8,17 @@ import (
 	"image/draw"
 	"image/png"
 	"os"
+	"time"
+	"log"
+	"sync"
 )
-import "github.com/veandco/go-sdl2/sdl"
+// import "github.com/veandco/go-sdl2/sdl"
 
 func map_values(value int, in_min, in_max, out_min, out_max float64) float64 {
 	return (float64(value) - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 }
 
-func printFractal(WIDTH, HEIGTH, maxIterations, count int, min, max float64, renderer *sdl.Renderer) {
+func printFractal(WIDTH, HEIGTH, maxIterations, count int, min, max float64, wg *sync.WaitGroup) {
 	bounds := image.Rect(0, 0, WIDTH, HEIGTH)
 	b_set := image.NewNRGBA(bounds)
 	draw.Draw(b_set, bounds, image.NewUniform(color.Black), image.ZP, draw.Src)
@@ -59,8 +62,8 @@ func printFractal(WIDTH, HEIGTH, maxIterations, count int, min, max float64, ren
 			green := brigth
 			blue := map_values(int(math.Sqrt(brigth)), 0, math.Sqrt(255), 0, 255)
 
-			renderer.SetDrawColor(uint8(red), uint8(green), uint8(blue), 255)
-			renderer.DrawPoint(int32(x), int32(y))
+			// renderer.SetDrawColor(uint8(red), uint8(green), uint8(blue), 255)
+			// renderer.DrawPoint(int32(x), int32(y))
 
 			b_set.Set(x, y, color.NRGBA{uint8(red),
 				uint8(green), uint8(blue), 255})
@@ -79,6 +82,7 @@ func printFractal(WIDTH, HEIGTH, maxIterations, count int, min, max float64, ren
 	if err = f.Close(); err != nil {
 		fmt.Println(err)
 	}
+	defer wg.Done()
 }
 
 func main() {
@@ -90,21 +94,26 @@ func main() {
 	var max float64 = 1.0
 
 	var factor float64 = 1
+
+	// Criando WaitGroup para sincronizar as tarefas paralelas
+	var wg sync.WaitGroup
+	wg.Add(10)
 	
-	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
-		panic(err)
-	}
-	defer sdl.Quit()
+	// if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
+	// 	panic(err)
+	// }
+	// defer sdl.Quit()
 
 	// Cria window and renderer
-	window, renderer, err := sdl.CreateWindowAndRenderer(1400, 900, 0);
-	if err != nil {
-		panic(err)
-	}
-	defer window.Destroy()
-	renderer.SetLogicalSize(WIDTH, HEIGTH)
+	// window, renderer, err := sdl.CreateWindowAndRenderer(1400, 900, 0);
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// defer window.Destroy()
+	// renderer.SetLogicalSize(WIDTH, HEIGTH)
 
 	count := 0
+	start := time.Now()
 	for {
 		// Esse trecho do algoritmo é responsável por realizar as mudanças nas constantes
 		// min e max que são responsáveis por criar o efeito de zoom.
@@ -113,25 +122,27 @@ func main() {
 		min += 0.15*factor
 		factor *= 0.9349
 		MAX_ITERATIONS += 5
-		// var file_name string
 
-		if (count > 30) {
-			MAX_ITERATIONS = int(float64(MAX_ITERATIONS)*1.02)
+		if (count > 10) {
+			wg.Wait()
+			elapsed := time.Since(start)
+			log.Printf("Execution took %s", elapsed)
+			os.Exit(0)
 		}
 
 		// O PollEvent é necessário para avisar o OS e não deixar a janela irresponsiva
-		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-			switch event.(type) {
-			case *sdl.QuitEvent:
-				println("Quit")
-				break
-			}
-		}
-		renderer.Clear()
+		// for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
+		// 	switch event.(type) {
+		// 	case *sdl.QuitEvent:
+		// 		println("Quit")
+		// 		break
+		// 	}
+		// }
+		// renderer.Clear()
 
-		printFractal(WIDTH, HEIGTH, MAX_ITERATIONS, count, min, max, renderer)
+		go printFractal(WIDTH, HEIGTH, MAX_ITERATIONS, count, min, max, &wg)
 
-		renderer.Present()
+		// renderer.Present()
 		count++
 	}
 }
