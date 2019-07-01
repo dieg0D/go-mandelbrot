@@ -72,7 +72,6 @@ func printFractal(WIDTH, HEIGTH, maxIterations int, min, max float64, renderer *
 			renderer.DrawPoint(int32(x), int32(y))
 		}
 	}
-	fmt.Println("toma no cu")
 	
 }
 
